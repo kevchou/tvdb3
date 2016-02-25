@@ -55,14 +55,6 @@ class Show(dict):
 
         for season in self.values():
             print(season)
-            
-
-
-
-[list(s.values()) for s in b.values()]
-        
-[ep for ep in b[3].values() if ep.air_date > datetime.now()]
-
         
 
 class Season(dict):
@@ -181,6 +173,9 @@ def get_show_episodes(series_id):
         return show
 
 
-
 b = get_show_episodes(275557)
+
+print([list(s.values()) for s in b.values()])
+        
+print([ep for ep in b[3].values() if ep.air_date > datetime.now()])
 
