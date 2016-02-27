@@ -1,11 +1,13 @@
-import re
-import os
 import urllib.request
 from bs4 import BeautifulSoup
 from datetime import datetime
-import sys, argparse
-from xml.etree.ElementTree import parse
 
+import re
+import os
+import sys, argparse
+
+
+# TVDB url constants
 TVDB_URL = 'http://thetvdb.com/api/'
 
 SEARCH_URL = 'GetSeries.php?seriesname={query}'
@@ -15,8 +17,10 @@ SERIES_EPISODES_URL = '/series/{id}/all/en.xml'
 
 APIKEY = '15C9D64D3EFCC581'
 
+
 # Video file extensions
 exts = ('.mkv', '.mp4', '.avi')
+
 
 # REGULAR EXPRESSIONS FOR FILE NAME SEARCHES
 # Multi episode files, like 'S09E01 - E02"
@@ -31,7 +35,6 @@ exts = ('.mkv', '.mp4', '.avi')
 # s_rgx = re.compile('[sS][0-9]+')
 # e_rgx = re.compile('[eE][0-9]+')
 # alt_rgx = re.compile('(x|\.)')
-
 
 
 class Show(dict):
@@ -152,69 +155,40 @@ def search(query):
     Inputs: show name string
     '''
 
-    def get_tvdb_search_soup(query):
-    
-        url = TVDB_URL + SEARCH_URL.format(query=query)
-        url = url.replace(' ', '%20')
-    
-        request = urllib.request.urlopen(url)
-
-        if request.code == 200:
-        
-            raw_xml = request.read()
-            soup = BeautifulSoup(raw_xml, 'xml')
-            
-        return soup
-
     assert type(query) == str, "Input needs to be a string"
     
     search_results = {}
 
-    soup = get_tvdb_search_soup(query)
-    
-    results = soup.find_all('Series')
-    
-    for result in results:
-        show_name = result.find('SeriesName').text
-        show_id = result.find('id').text
+    url = TVDB_URL + SEARCH_URL.format(query=query)
+    url = url.replace(' ', '%20')
+        
+    request = urllib.request.urlopen(url)
 
-        search_results[show_name] = show_id
+    if request.code == 200:
+            
+        raw_xml = request.read()
+        soup = BeautifulSoup(raw_xml, 'xml')
+    
+        results = soup.find_all('Series')
+    
+        for result in results:
+            show_id = int(result.find('id').text)
+
+            search_results[show_id] = Show(show_id)
 
     row_format = "{:<10}" + "{:>20}"
     print(row_format.format("Show ID", "Show Name"))
-    for name, id in search_results.items():
-        print(row_format.format(id, name))
+    for id, show in search_results.items():
+        print(row_format.format(id, show.show_name))
             
     return search_results
-
-
-
-        
-    
-    
-
-# def get_show_info(series_id):
-#     url = TVDB_URL + APIKEY + SERIES_INFO_URL.format(id=series_id)
-
-#     request = urllib.request.urlopen(url)
-
-#     if request.code == 200:
-#         raw_xml = request.read()
-#         soup = BeautifulSoup(raw_xml, 'xml')
-
-#         show = soup.find('Series')
-
-#         show_name = show.find('SeriesName').text
-#         show_id = show.find('id').text
-
-#         print('{id} - {name}'.format(id=show_id, name=show_name))
 
 
 
 b = 275557
 s = 79169
 
-search('bobs burgers')
+s = search('seinfeld')
 
 seinfeld = Show(s)
 broad = Show(b)
