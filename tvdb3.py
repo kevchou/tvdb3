@@ -79,8 +79,15 @@ class Show(dict):
 
         for season in self.values():
             for episode in season.values():
-                if datetime.strptime(episode.air_date, '%Y-%m-%d') > datetime.now():
-                    not_aired.append(episode)
+                try:
+                    d = datetime.strptime(episode.air_date, "%Y-%m-%d")
+                    if d > datetime.now():
+                        not_aired.append(episode)
+                        
+                except ValueError:
+                    # air_date must not be of format 'YYYY-MM-DD'
+                    pass
+                    
 
         for ep in not_aired:
             print('{a} {n}'.format(a=ep.air_date, n=ep))
@@ -144,39 +151,47 @@ def search(query):
     Searches tvdb for the input show name to find the correct series id.
     Inputs: show name string
     '''
+
+    def get_tvdb_search_soup(query):
+    
+        url = TVDB_URL + SEARCH_URL.format(query=query)
+        url = url.replace(' ', '%20')
+    
+        request = urllib.request.urlopen(url)
+
+        if request.code == 200:
+        
+            raw_xml = request.read()
+            soup = BeautifulSoup(raw_xml, 'xml')
+            
+        return soup
+
     assert type(query) == str, "Input needs to be a string"
     
-    results_array = []
+    search_results = {}
 
-    # Query TVDB for input show
-    url = TVDB_URL + SEARCH_URL.format(query=query)
-    url = url.replace(' ', '%20')
+    soup = get_tvdb_search_soup(query)
     
-    request = urllib.request.urlopen(url)
-
-    if request.code == 200:
-        
-        raw_xml = request.read()
-
-        soup = BeautifulSoup(raw_xml, 'xml')
-        
-        results = soup.find_all('Series')
+    results = soup.find_all('Series')
     
-        for result in results:
-            show_name = result.find('SeriesName').text
-            show_id = result.find('id').text
+    for result in results:
+        show_name = result.find('SeriesName').text
+        show_id = result.find('id').text
 
-            results_array.append((show_name, show_id))
+        search_results[show_name] = show_id
 
-    print(results_array)
-    
     row_format = "{:<10}" + "{:>20}"
     print(row_format.format("Show ID", "Show Name"))
-    for name, id in results_array:
+    for name, id in search_results.items():
         print(row_format.format(id, name))
             
-    return results_array
+    return search_results
 
+
+
+        
+    
+    
 
 # def get_show_info(series_id):
 #     url = TVDB_URL + APIKEY + SERIES_INFO_URL.format(id=series_id)
@@ -195,45 +210,12 @@ def search(query):
 #         print('{id} - {name}'.format(id=show_id, name=show_name))
 
 
-# def get_show_episodes(series_id):
-#     url = TVDB_URL + APIKEY + SERIES_EPISODES_URL.format(id=series_id)
-#     request = urllib.request.urlopen(url)
-
-#     if request.code == 200:
-
-#         raw_xml = request.read()
-#         soup = BeautifulSoup(raw_xml, 'xml')
-
-#         series = soup.find('Series')
-#         show_name = series.find('SeriesName').text
-
-#         show = Show(show_name)
-
-#         for ep in soup.find_all('Episode'):
-#             season_num = ep.find("SeasonNumber").text
-#             ep_num = ep.find("EpisodeNumber").text
-#             ep_name = ep.find("EpisodeName").text
-#             air_date = ep.find("FirstAired").text
-
-#             season_num = int(season_num)
-#             ep_num = int(ep_num)
-#             air_date = datetime.strptime(air_date, '%Y-%m-%d')
-
-#             show[season_num][ep_num] = Episode(ep_name,
-#                                                season_num,
-#                                                ep_num,
-#                                                air_date)
-#         return show
-
 
 b = 275557
 s = 79169
 
-
-        
-# print([ep for ep in b[3].values() if ep.air_date > datetime.now()])
-
-# search('bobs burgers')
+search('bobs burgers')
 
 seinfeld = Show(s)
 broad = Show(b)
+bob = Show(194031)
