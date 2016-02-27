@@ -162,12 +162,19 @@ def search(query):
         
         results = soup.find_all('Series')
     
-        for i, result in enumerate(results):
+        for result in results:
             show_name = result.find('SeriesName').text
             show_id = result.find('id').text
 
-            results_array.append((i, show_name, show_id))
+            results_array.append((show_name, show_id))
 
+    print(results_array)
+    
+    row_format = "{:<10}" + "{:>20}"
+    print(row_format.format("Show ID", "Show Name"))
+    for name, id in results_array:
+        print(row_format.format(id, name))
+            
     return results_array
 
 
