@@ -184,12 +184,12 @@ def search(query):
     return search_results
 
 
-
-b = 275557
-s = 79169
-
 s = search('seinfeld')
 
-seinfeld = Show(s)
-broad = Show(b)
+seinfeld = Show(79169)
+broad = Show(275557)
 bob = Show(194031)
+
+
+
+url = TVDB_URL + APIKEY + SERIES_EPISODES_URL.format(id=275557)
