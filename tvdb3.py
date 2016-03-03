@@ -57,12 +57,8 @@ class Show(dict):
                                                air_date=air_date)
 
     def __getitem__(self, season_num):
-        if season_num in self:
-            return dict.__getitem__(self, season_num)
-        else:
-            dict.__setitem__(self, season_num, Season(show_name=self.show_name,
-                                                      season_num=season_num))
-            return dict.__getitem__(self, season_num)
+        return self.setdefault(season_num, Season(show_name=self.show_name,
+                                                  season_num=season_num))
 
     def __repr__(self):
         return "{name:s} - {num_seas:d} Seasons".format(name=self.show_name,
@@ -76,11 +72,11 @@ class Show(dict):
             for episode in season.values():
                 try:
                     d = datetime.strptime(episode.air_date, "%Y-%m-%d")
-                    if d > datetime.now():
+                    if d >= datetime.now():
                         not_aired.append(episode)
 
                 except ValueError:
-                    # air_date must not be of format 'YYYY-MM-DD'
+                    # air_date missing. just dont append episode
                     pass
 
         for ep in not_aired:
@@ -95,14 +91,9 @@ class Season(dict):
         self.season_num = season_num
 
     def __getitem__(self, episode_num):
-        if episode_num in self:
-            return dict.__getitem__(self, episode_num)
-        else:
-            dict.__setitem__(self, episode_num, Episode(episode_title=None,
-                                                        season_num=None,
-                                                        episode_num=None))
-            return dict.__getitem__(self, episode_num)
-
+        return self.setdefault(episode_num, Episode(episode_title=None,
+                                                    season_num=None,
+                                                    episode_num=None))
     def __str__(self):
         return("Season {:d}:\n".format(self.season_num) +
                "\n".join(self.get_episode_list()))
