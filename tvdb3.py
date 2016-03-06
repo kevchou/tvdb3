@@ -14,8 +14,8 @@ APIKEY = '15C9D64D3EFCC581'
 
 
 def get_tvdb_soup(series_id):
-    """ Retrieves show XML from inputted series_id number and returns
-    a BeautifulSoup object """
+    """Retrieves XML from inputted series_id number and returns a BeautifulSoup
+    object"""
 
     url = TVDB_URL + APIKEY + SERIES_EPISODES_URL.format(id=series_id)
     request = urllib.request.urlopen(url)
@@ -29,7 +29,7 @@ def get_tvdb_soup(series_id):
 
 
 class Show(dict):
-    """ A Show object that holds all the episodes of a show """
+    """A Show object that holds all the episodes of a show"""
 
     def __init__(self, series_id):
         dict.__init__(self)
@@ -46,6 +46,7 @@ class Show(dict):
             ep_name = ep.find("EpisodeName").text
             air_date = ep.find("FirstAired").text
 
+            # If the season object doesnt exist yet, create it
             if season_num not in self:
                 self[season_num] = Season(show_name=self.show_name,
                                           season_num=season_num)
@@ -64,7 +65,7 @@ class Show(dict):
         return "{name:s} - {num_seas:d} Seasons".format(name=self.show_name,
                                                         num_seas=len(self))
 
-    def print_next_air(self):
+    def get_next_air_dates(self):
         """ Finds unaired episodes and prints them """
         not_aired = []
 
@@ -79,9 +80,8 @@ class Show(dict):
                     # air_date missing. just dont append episode
                     pass
 
-        for ep in not_aired:
-            print('{a} {n}'.format(a=ep.air_date, n=ep))
-
+        return not_aired
+            
 
 class Season(dict):
 
@@ -94,6 +94,7 @@ class Season(dict):
         return self.setdefault(episode_num, Episode(episode_title=None,
                                                     season_num=None,
                                                     episode_num=None))
+
     def __str__(self):
         return("Season {:d}:\n".format(self.season_num) +
                "\n".join(self.get_episode_list()))
@@ -155,12 +156,56 @@ def search(query):
 
     return search_results
 
+
+class MyShows:
+
+    def __init__(self):
+        self.my_shows = []
+
+    def add_show(self, series_id):
+        
+        show = Show(series_id)
+        
+        self.my_shows.append(show)
+        
+        print("Added {:} to my shows".format(show.show_name))
+
+    def __repr__(self):
+        return "{:}".format([i for i in self.my_shows])
+
+    def get_next_air_dates(self):
+        
+        all_eps = []
+        
+        for show in self.my_shows:
+            all_eps += show.get_next_air_dates()
+
+        # Sort by air date
+        all_eps = sorted(all_eps, key = lambda x: x.air_date)
+        
+        for ep in all_eps:
+            print("{:}, {:}, {:}".format(ep.show_name, ep.episode_title, ep.air_date))
+        
+        return all_eps
+
+
+######## For Testing
+    
 # example of searching for a show
-s = search('seinfeld')
+s = search('11.22.63')
 
-# creating show objects
-seinfeld = Show(79169)
-broad = Show(275557)
-bob = Show(194031)
 
-soup = get_tvdb_soup(275557)
+myshows = MyShows()
+
+myshows.add_show(79169)  # Seinfeld
+myshows.add_show(275557) # Broad City
+myshows.add_show(194031) # Bob's Burgers
+myshows.add_show(301824) # 11.22.63
+
+nextairs = myshows.get_next_air_dates()
+
+print()
+print("{:<20} | {:<40} | {:<10}".format("Show", "Episode", "Next Air"))
+print("-"*20 + "-+-" + "-" * 40 + "-+-" + "-"*10)
+for ep in nextairs:
+    print("{:<20} | {:<40} |  {:>10}".format(ep.show_name, ep.episode_title, ep.air_date))
