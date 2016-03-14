@@ -91,13 +91,14 @@ class Season(dict):
         self.season_num = season_num
 
     def __getitem__(self, episode_num):
-        return self.setdefault(episode_num, Episode(episode_title=None,
+        return self.setdefault(episode_num, Episode(show_name=None,
+                                                    episode_title=None,
                                                     season_num=None,
                                                     episode_num=None))
 
-    def __str__(self):
-        return("Season {:d}:\n".format(self.season_num) +
-               "\n".join(self.get_episode_list()))
+    def __repr__(self):
+        return("{:} - S{:02d}: {:} episodes".format(self.show_name, self.season_num, len(self)))
+               
 
     def get_episode_list(self):
         return ["{num} - {title}".format(num=ep.ep_num, title=ep.episode_title)
@@ -114,8 +115,8 @@ class Episode:
         self.ep_num = episode_num
         self.air_date = air_date
 
-    def __str__(self):
-        output_string = "{show} - S{season:02d}E{ep:02d} - {title:s}"
+    def __repr__(self):
+        output_string = "{show} - S{season:02d}E{ep:02d}: {title:s}"
         return output_string.format(show=self.show_name,
                                     season=self.season_num,
                                     ep=self.ep_num,
@@ -158,35 +159,33 @@ def search(query):
 
 
 class MyShows:
-
+    """Instances of this class will hold an array of Show objects"""
+    
     def __init__(self):
         self.my_shows = []
 
     def add_show(self, series_id):
-        
-        show = Show(series_id)
-        
-        self.my_shows.append(show)
-        
-        print("Added {:} to my shows".format(show.show_name))
+        """Adds show to the self.my_shows list"""
 
-    def __repr__(self):
-        return "{:}".format([i for i in self.my_shows])
+        new_show = Show(series_id)
+        self.my_shows.append(new_show)
+        
+        print("Added {:} to my shows".format(new_show.show_name))
 
     def get_next_air_dates(self):
         
-        all_eps = []
+        next_eps = []
         
         for show in self.my_shows:
-            all_eps += show.get_next_air_dates()
+            next_eps += show.get_next_air_dates()
 
         # Sort by air date
-        all_eps = sorted(all_eps, key = lambda x: x.air_date)
+        next_eps = sorted(next_eps, key = lambda ep: ep.air_date)
         
-        for ep in all_eps:
-            print("{:}, {:}, {:}".format(ep.show_name, ep.episode_title, ep.air_date))
-        
-        return all_eps
+        return next_eps
+    
+    def __repr__(self):
+        return "{:}".format([i for i in self.my_shows])
 
 
 ######## For Testing
@@ -209,3 +208,7 @@ print("{:<20} | {:<40} | {:<10}".format("Show", "Episode", "Next Air"))
 print("-"*20 + "-+-" + "-" * 40 + "-+-" + "-"*10)
 for ep in nextairs:
     print("{:<20} | {:<40} |  {:>10}".format(ep.show_name, ep.episode_title, ep.air_date))
+
+
+
+s = myshows.my_shows[1]
