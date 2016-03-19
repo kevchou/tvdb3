@@ -38,6 +38,7 @@ class Show(dict):
         soup = get_tvdb_soup(series_id)
 
         self.show_name = soup.find('Series').find('SeriesName').text
+        self.imdb_id = soup.find('Series').find('IMDB_ID').text
 
         for ep in soup.find_all('Episode'):
 
@@ -45,6 +46,7 @@ class Show(dict):
             ep_num = int(ep.find("EpisodeNumber").text)
             ep_name = ep.find("EpisodeName").text
             air_date = ep.find("FirstAired").text
+            imdb_id = ep.find("IMDB_ID").text
 
             # If the season object doesnt exist yet, create it
             if season_num not in self:
@@ -55,6 +57,7 @@ class Show(dict):
                                                episode_title=ep_name,
                                                season_num=season_num,
                                                episode_num=ep_num,
+                                               imdb_id=imdb_id,
                                                air_date=air_date)
 
     def __getitem__(self, season_num):
@@ -94,7 +97,8 @@ class Season(dict):
         return self.setdefault(episode_num, Episode(show_name=None,
                                                     episode_title=None,
                                                     season_num=None,
-                                                    episode_num=None))
+                                                    episode_num=None,
+                                                    imdb_id=None))
 
     def __repr__(self):
         return("{:} - S{:02d}: {:} episodes".format(self.show_name, self.season_num, len(self)))
@@ -107,12 +111,13 @@ class Season(dict):
 
 class Episode:
 
-    def __init__(self, show_name, episode_title, season_num, episode_num,
+    def __init__(self, show_name, episode_title, season_num, episode_num, imdb_id,
                  air_date=None):
         self.show_name = show_name
         self.episode_title = episode_title
         self.season_num = season_num
         self.ep_num = episode_num
+        self.imdb_id = imdb_id
         self.air_date = air_date
 
     def __repr__(self):
@@ -208,7 +213,5 @@ print("{:<20} | {:<40} | {:<10}".format("Show", "Episode", "Next Air"))
 print("-"*20 + "-+-" + "-" * 40 + "-+-" + "-"*10)
 for ep in nextairs:
     print("{:<20} | {:<40} |  {:>10}".format(ep.show_name, ep.episode_title, ep.air_date))
-
-
 
 s = myshows.my_shows[1]
