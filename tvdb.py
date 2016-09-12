@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import urllib.request
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -6,9 +8,8 @@ from pandas import DataFrame
 # TVDB constants
 TVDB_URL = 'http://thetvdb.com/api/'
 SEARCH_URL = 'GetSeries.php?seriesname={show_name}'
-
-SERIES_INFO_URL = '/series/{series_id}/en.xml'
 SERIES_EPISODES_URL = '/series/{tvdb_id}/all/en.xml'
+# SERIES_INFO_URL = '/series/{series_id}/en.xml'
 
 APIKEY = '15C9D64D3EFCC581'
 
@@ -89,7 +90,7 @@ class Show:
     def __init__(self, tvdb_id):
         self._seasons = dict()
 
-        soup = get_soup_for_series(tvdb_id)
+        soup = get_soup_for_series(tvdb_id)  # Retrieve show info from tvdb
 
         self.show_name = soup.find('Series').find('SeriesName').text
         self.imdb_id = soup.find('Series').find('IMDB_ID').text
@@ -138,3 +139,4 @@ class Show:
         return DataFrame(data)
 
 bob = Show(194031)
+print(bob.get_df())
