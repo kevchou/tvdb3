@@ -189,29 +189,32 @@ class MyShows:
         
         return next_eps
     
+    def print_next_air_dates(self):
+        print("{:<50} | {:<10}".format("Episode", "Next Air"))
+        print("-"*51 + "+" + "-"*11)
+        for ep in self.get_next_air_dates():
+            print("{:<50} |  {:>10}".format(str(ep), ep.air_date))
+            
     def __repr__(self):
         return "{:}".format([i for i in self.my_shows])
 
 
 ######## For Testing
     
-# example of searching for a show
-s = search('11.22.63')
+print("examples of searching for a show")
+search('11.22.63')
+search('its always sunny')
 
 
+print()
+print("MyShows object")
 myshows = MyShows()
 
 myshows.add_show(79169)  # Seinfeld
 myshows.add_show(275557) # Broad City
 myshows.add_show(194031) # Bob's Burgers
 myshows.add_show(301824) # 11.22.63
+myshows.add_show(75805)  # Its always sunny
+myshows.add_show(273181) # better call saul
 
-nextairs = myshows.get_next_air_dates()
-
-print()
-print("{:<20} | {:<40} | {:<10}".format("Show", "Episode", "Next Air"))
-print("-"*20 + "-+-" + "-" * 40 + "-+-" + "-"*10)
-for ep in nextairs:
-    print("{:<20} | {:<40} |  {:>10}".format(ep.show_name, ep.episode_title, ep.air_date))
-
-s = myshows.my_shows[1]
+myshows.print_next_air_dates()
