@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import urllib.request
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -37,7 +35,7 @@ def show_search(show_name):
             show_id = result.find('id').text
             show_name = result.find('SeriesName').text
             search_results[show_id] = show_name
-    
+
     return search_results
 
 
@@ -54,7 +52,7 @@ def get_soup_for_series(tvdb_id):
         soup = BeautifulSoup(raw_xml, 'xml')
     else:
         print("request error")
-        
+
     return soup
 
 
@@ -85,7 +83,7 @@ class Season:
     def set_episode(self, episode):
         self._episodes[episode.episode_num] = episode
 
-        
+
 class Show:
     def __init__(self, tvdb_id):
         self._seasons = dict()
@@ -114,7 +112,7 @@ class Show:
                                      ep_num,
                                      imdb_id,
                                      air_date))
-            
+
     def get_season(self, season_num):
         season = self._seasons.get(season_num)
 
@@ -137,6 +135,3 @@ class Show:
                              'title': ep.episode_title,
                              'airdate': ep.air_date})
         return DataFrame(data)
-
-bob = Show(194031)
-print(bob.get_df())
