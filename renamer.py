@@ -2,9 +2,8 @@ import re
 import os
 import tvdb
 
-
+# Video file extentions to look for
 exts = ('.mkv', '.mp4')
-
 
 # ----- Regex Expressions -----
 # Multi episode files, like 'S09E01 - E02"
@@ -14,7 +13,7 @@ multi_ep_regex = re.compile('([sS][0-9]+[eE][0-9]+.*[eE][0-9]+)|([0-9]+(x|\.)[0-
 x_single_ep = re.compile('([sS][0-9]+.?[eE][0-9]+)|([0-9]+(x|\.)[0-9]+)')
 
 # Regex for file extensions
-x_video_ext = re.compile('(\.mkv|\.mp4)')
+x_video_ext = re.compile("(" + "|".join(["\\" + e for e in exts]) + ")")
 
 x_season = re.compile('[sS]([0-9]+)')
 x_episode = re.compile('[eE]([0-9]+)')
@@ -38,16 +37,15 @@ def rename_all_shows_in_dir(d, show_title):
             new_file_name = get_new_file_name(old_file_name, show)
             os.rename(root + '/' + old_file_name,
                       root + '/' + new_file_name)
+            
             print(old_file_name + "\t -> \t" + new_file_name)
 
 
-def get_new_file_name(f, show):
-    ep_ext = get_regex_match(f, x_video_ext)
-    ep_label = get_regex_match(f, x_single_ep)
-
-    season = num_from_regex_match(ep_label, x_season)
-    episode = num_from_regex_match(ep_label, x_episode)
-
+def get_new_file_name(old_file_name, show):
+    
+    season, episode = get_season_episode_num(old_file_name)
+    
+    ep_ext = get_regex_match(old_file_name, x_video_ext)
     ep_label = "S{s:02d}E{ep:02d}".format(s=season, ep=episode)
     ep_title = show.get_season(season).get_episode(episode).episode_title
 
@@ -57,7 +55,14 @@ def get_new_file_name(f, show):
                                                             ext=ep_ext)
     return new_name
 
-            
+
+def get_season_episode_num(label):
+    extracted_label = get_regex_match(label, x_single_ep)
+    season_num = num_from_regex_match(extracted_label, x_season)
+    episode_num = num_from_regex_match(extracted_label, x_episode)
+    return season_num, episode_num
+
+
 def get_regex_match(text, regex):
     return regex.search(text).group()
 
