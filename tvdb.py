@@ -83,6 +83,12 @@ class Season:
     def set_episode(self, episode):
         self._episodes[episode.episode_num] = episode
 
+    def __repr__(self):
+        s = ""
+        for ep_num, episode in self._episodes.items():
+            s += "{num} - {title}\n".format(num=ep_num, title=episode.episode_title)
+        return s
+
 
 class Show:
     def __init__(self, tvdb_id):
@@ -135,3 +141,9 @@ class Show:
                              'title': ep.episode_title,
                              'airdate': ep.air_date})
         return DataFrame(data)
+
+    def __repr__(self):
+        s = ""
+        for season_num, season in self._seasons.items():
+            s += "{num} - {eps} episodes\n".format(num=season_num, eps=len(season._episodes))
+        return s

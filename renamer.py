@@ -1,5 +1,7 @@
 import re
 import os
+import argparse
+
 import tvdb
 
 # Video file extentions to look for
@@ -20,7 +22,7 @@ x_episode = re.compile('[eE]([0-9]+)')
 x_alt = re.compile('(x|\.)')
 
 
-def rename_all_shows_in_dir(d, show_title):
+def rename_all_shows_in_dir(d, show_title, include_title):
     show = tvdb.Show(list(tvdb.show_search(show_title).keys())[0])
 
     dirpath = os.path.realpath(d)
@@ -30,29 +32,32 @@ def rename_all_shows_in_dir(d, show_title):
 
         if len(ep_files) > 0:
             print(root)
-            
+
         # Loop through each file
         for i in range(len(ep_files)):
             old_file_name = ep_files[i]
-            new_file_name = get_new_file_name(old_file_name, show)
+            new_file_name = get_new_file_name(old_file_name, show, include_title)
             os.rename(root + '/' + old_file_name,
                       root + '/' + new_file_name)
-            
+
             print(old_file_name + "\t -> \t" + new_file_name)
 
 
-def get_new_file_name(old_file_name, show):
-    
+def get_new_file_name(old_file_name, show, include_title=False):
+
     season, episode = get_season_episode_num(old_file_name)
-    
+
     ep_ext = get_regex_match(old_file_name, x_video_ext)
     ep_label = "S{s:02d}E{ep:02d}".format(s=season, ep=episode)
     ep_title = show.get_season(season).get_episode(episode).episode_title
 
-    new_name = "{title} - {sea_ep} - {ep_name}{ext}".format(title=show.show_name,
-                                                            sea_ep=ep_label,
-                                                            ep_name=ep_title,
-                                                            ext=ep_ext)
+    new_name = "{sea_ep} - {ep_name}{ext}".format(sea_ep=ep_label,
+                                                  ep_name=ep_title,
+                                                  ext=ep_ext)
+
+    if include_title:
+        new_name = show.show_name + " - " + new_name
+
     return new_name
 
 
@@ -72,5 +77,22 @@ def num_from_regex_match(text, regex):
     if result:
         return int(result.groups()[0])
 
+
+def main():
     
-rename_all_shows_in_dir(".", "king of the hill")    
+    parser = argparse.ArgumentParser(description="Renames file names")
+    parser.add_argument('--show', dest="show_name", help="Show title", required=True)
+    parser.add_argument('--includetitle', dest="include_title",
+                        help="If show title should be included in the renamed files",
+                        required=False,
+                        action='store_true')
+    args = parser.parse_args()
+
+    print(args.show_name)
+    print(args.include_title)
+    
+    rename_all_shows_in_dir(os.getcwd(), args.show_name, args.include_title)
+
+    
+if __name__ == "__main__":
+    main()
