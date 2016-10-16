@@ -1,7 +1,5 @@
 import urllib.request
 from bs4 import BeautifulSoup
-from datetime import datetime
-from pandas import DataFrame
 
 # TVDB constants
 TVDB_URL = 'http://thetvdb.com/api/'
@@ -84,9 +82,21 @@ class Season:
         self._episodes[episode.episode_num] = episode
 
     def __repr__(self):
-        s = ""
+
+        max_title = max([len(ep.episode_title) for _, ep in self._episodes.items()])
+
+        row_format = "{:} | {:} | {:} | {:}\n".format("{:>6}", "{:>7}",
+                                                      "{:<" + str(max_title) + "}",
+                                                      "{:<10}")
+        
+        s = row_format.format("Season", "Episode", "Title", "Air date")
+        s += "-" * (6 + 3 + 7 + 3 + max_title + 3 + 10) + "\n"
         for ep_num, episode in self._episodes.items():
-            s += "{num} - {title}\n".format(num=ep_num, title=episode.episode_title)
+            # s += "{num} - {title}\n".format(num=ep_num, title=episode.episode_title)
+            s += row_format.format(episode.season_num,
+                                   ep_num,
+                                   episode.episode_title,
+                                   episode.air_date)
         return s
 
 
@@ -131,19 +141,17 @@ class Show:
     def set_season(self, season):
         self._seasons[season.season_num] = season
 
-    def get_df(self):
-        data = []
-        for s in self._seasons:
-            for e in self.get_season(s)._episodes:
-                ep = self.get_season(s).get_episode(e)
-                data.append({'season': ep.season_num,
-                             'episode': ep.episode_num,
-                             'title': ep.episode_title,
-                             'airdate': ep.air_date})
-        return DataFrame(data)
-
     def __repr__(self):
-        s = ""
+        s = "{show}\n".format(show=self.show_name)
         for season_num, season in self._seasons.items():
-            s += "{num} - {eps} episodes\n".format(num=season_num, eps=len(season._episodes))
+            s += "Season {num} - {eps} episodes\n".format(num=season_num, eps=len(season._episodes))
         return s
+
+
+# TEST
+show_search('youre the worst')  # 281776
+show_search('bobs burgers')     # 194031
+
+y = Show(281776)
+b = Show(194031)
+
